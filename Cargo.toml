@@ -1,0 +1,40 @@
+[package]
+name = "dnsbot"
+version = "0.1.0"
+edition = "2021"
+authors = ["cofob <cofob@riseup.net>"]
+description = "DNS resolver in matrix"
+readme = "README.md"
+repository = "https://git.sr.ht/~cofob/matrix-dnsbot"
+homepage = "https://sr.ht/~cofob/matrix-dnsbot"
+license = "AGPL-3.0-or-later"
+keywords = ["dns", "matrix", "bot"]
+
+[dependencies]
+matrix-sdk = { version = "^0.5", features = ["sled", "anyhow", "e2e-encryption"] }
+matrix-sdk-sled = "^0.1"
+tokio = { version = "1.19.2", features = ["full"] }
+log = "^0.4"
+dotenv = "^0.15"
+anyhow = "^1"
+regex = "^1"
+lazy_static = "^1.4"
+tracing-subscriber = "^0.3"
+pretty_env_logger = "^0.4"
+async-std-resolver = "^0.21"
+
+[profile.dev]
+codegen-units = 256
+incremental = true
+opt-level = 0
+debug = true
+
+[profile.release]
+debug-assertions = false
+overflow-checks = false
+incremental = false
+opt-level = 3
+panic = 'unwind'
+debug = false
+strip = true
+lto = true
