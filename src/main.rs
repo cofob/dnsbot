@@ -62,14 +62,14 @@ async fn on_room_message(event: OriginalSyncRoomMessageEvent, room: Room) {
 							// lets goooo shitcode
 							plain_answer.push_str("s for ");
 							plain_answer.push_str(domain);
-							plain_answer.push_str(":");
+							plain_answer.push(':');
 							answer.push_str("s for <code>");
 							answer.push_str(domain);
 							answer.push_str("</code>:");
 						} else {
 							plain_answer.push_str(" for ");
 							plain_answer.push_str(domain);
-							plain_answer.push_str(":");
+							plain_answer.push(':');
 							answer.push_str(" for <code>");
 							answer.push_str(domain);
 							answer.push_str("</code>:");
