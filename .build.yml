@@ -1,6 +1,7 @@
 image: debian/bullseye
 packages:
   - curl
+  - openssl
   - lld
   - gcc
   - upx
