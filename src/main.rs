@@ -1,5 +1,7 @@
 extern crate dotenv;
 
+#[macro_use] extern crate log;
+
 use std::env;
 use std::time::Instant;
 use dotenv::dotenv;
@@ -13,7 +15,6 @@ use matrix_sdk::{
 	}, Client,
 };
 use tokio::time::{sleep, Duration};
-use log::{info, debug};
 use regex::Regex;
 use lazy_static::lazy_static;
 use async_std_resolver::resolver_from_system_conf;
@@ -30,79 +31,90 @@ async fn on_room_message(event: OriginalSyncRoomMessageEvent, room: Room) {
 		};
 
 		msg_body = msg_body.to_lowercase();
+		let mut i: u8 = 0;
 
-		if msg_body.contains("resolve help") {
-			let content = RoomMessageEventContent::text_html(
-				"Just send 'resolve (domain)'. 'resolve source' to get the code.",
-				"Just send <code>resolve (domain)</code>. <code>resolve source</code> to get the code.");
-			room.send(content, None).await.unwrap();
-		} else if msg_body.contains("resolve source") {
-			let content = RoomMessageEventContent::text_plain("https://git.sr.ht/~cofob/matrix-dnsbot");
-			room.send(content, None).await.unwrap();
-		} else if msg_body.contains("resolve") {
-			let caps = RE.captures(&msg_body);
-			match caps {
-				Some(cap) => {
-					let start = Instant::now();
-					let domain = cap.get(1).unwrap().as_str();
-					let resolver = resolver_from_system_conf().await.unwrap();
-					let lookup = resolver.lookup_ip(domain).await;
-					if lookup.is_ok() {
-						let lookup = lookup.unwrap();
-						if lookup.iter().count() == 0 {
-							let content = RoomMessageEventContent::text_plain("empty");
-							room.send(content, None).await.unwrap();
-							return;
-						}
-
-						let mut plain_answer = String::from("IP record");
-						let mut answer = String::from("IP record");
-
-						if lookup.iter().count() > 1 {
-							// lets goooo shitcode
-							plain_answer.push_str("s for ");
-							plain_answer.push_str(domain);
-							plain_answer.push(':');
-							answer.push_str("s for <code>");
-							answer.push_str(domain);
-							answer.push_str("</code>:");
-						} else {
-							plain_answer.push_str(" for ");
-							plain_answer.push_str(domain);
-							plain_answer.push(':');
-							answer.push_str(" for <code>");
-							answer.push_str(domain);
-							answer.push_str("</code>:");
-						}
-
-						for ip in lookup {
-							plain_answer.push_str(" '");
-							plain_answer.push_str(&ip.to_string());
-							plain_answer.push_str("';");
-							answer.push_str(" <code>");
-							answer.push_str(&ip.to_string());
-							answer.push_str("</code>;");
-						}
-						let end = Instant::now();
-						let delta = end - start;
-						plain_answer.push_str(" That took ");
-						plain_answer.push_str(&delta.as_millis().to_string());
-						plain_answer.push_str(" ms.");
-						answer.push_str(" That took <code>");
-						answer.push_str(&delta.as_millis().to_string());
-						answer.push_str("</code> ms.");
-						let content = RoomMessageEventContent::text_html(plain_answer, answer);
-						room.send(content, None).await.unwrap();
-					} else {
-						let content = RoomMessageEventContent::text_plain("Unexpected error occured. Most likely, the domain simply does not have IP records.");
-						room.send(content, None).await.unwrap();
-					}
-				}
-    		_ => debug!("regex not found"),
+		for line in msg_body.rsplit('\n') {
+			if line.starts_with('>') {
+				continue
 			}
-		} else if room.is_direct() {
-			let content = RoomMessageEventContent::text_plain("I dont understand you! Send `resolve help` to get help.");
-			room.send(content, None).await.unwrap();
+
+			if line.contains("resolve help") {
+				let content = RoomMessageEventContent::text_html(
+					"Just send 'resolve (domain)'. 'resolve source' to get the code.",
+					"Just send <code>resolve (domain)</code>. <code>resolve source</code> to get the code.");
+				room.send(content, None).await.unwrap();
+			} else if line.contains("resolve source") {
+				let content = RoomMessageEventContent::text_plain("https://git.sr.ht/~cofob/matrix-dnsbot");
+				room.send(content, None).await.unwrap();
+			} else if line.contains("resolve") {
+				i += 1;
+				if i >= 6 {
+					return;
+				}
+				let caps = RE.captures(&line);
+				match caps {
+					Some(cap) => {
+						let start = Instant::now();
+						let domain = cap.get(1).unwrap().as_str();
+						let resolver = resolver_from_system_conf().await.unwrap();
+						let lookup = resolver.lookup_ip(domain).await;
+						if lookup.is_ok() {
+							let lookup = lookup.unwrap();
+							if lookup.iter().count() == 0 {
+								let content = RoomMessageEventContent::text_plain("empty");
+								room.send(content, None).await.unwrap();
+								return;
+							}
+
+							let mut plain_answer = String::from("IP record");
+							let mut answer = String::from("IP record");
+
+							if lookup.iter().count() > 1 {
+								// lets goooo shitcode
+								plain_answer.push_str("s for ");
+								plain_answer.push_str(domain);
+								plain_answer.push(':');
+								answer.push_str("s for <code>");
+								answer.push_str(domain);
+								answer.push_str("</code>:");
+							} else {
+								plain_answer.push_str(" for ");
+								plain_answer.push_str(domain);
+								plain_answer.push(':');
+								answer.push_str(" for <code>");
+								answer.push_str(domain);
+								answer.push_str("</code>:");
+							}
+
+							for ip in lookup {
+								plain_answer.push_str(" `");
+								plain_answer.push_str(&ip.to_string());
+								plain_answer.push_str("`;");
+								answer.push_str(" <code>");
+								answer.push_str(&ip.to_string());
+								answer.push_str("</code>;");
+							}
+							let end = Instant::now();
+							let delta = end - start;
+							plain_answer.push_str(" That took ");
+							plain_answer.push_str(&delta.as_millis().to_string());
+							plain_answer.push_str(" ms.");
+							answer.push_str(" That took <code>");
+							answer.push_str(&delta.as_millis().to_string());
+							answer.push_str("</code> ms.");
+							let content = RoomMessageEventContent::text_html(plain_answer, answer);
+							room.send(content, None).await.unwrap();
+						} else {
+							let content = RoomMessageEventContent::text_plain("Unexpected error occured. Most likely, the domain simply does not have IP records.");
+							room.send(content, None).await.unwrap();
+						}
+					}
+					_ => debug!("regex not found"),
+				}
+			} else if room.is_direct() {
+				let content = RoomMessageEventContent::text_plain("I dont understand you! Send `resolve help` to get help.");
+				room.send(content, None).await.unwrap();
+			}
 		}
 	}
 }

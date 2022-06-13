@@ -1,12 +1,17 @@
-image: alpine/latest
+image: debian/bullseye
 packages:
   - curl
+  - lld
+  - gcc
+  - upx
 sources:
   - https://git.sr.ht/~cofob/matrix-dnsbot
 triggers:
   - action: email
     condition: failure
     to: failure@cofob.ru
+artifacts:
+  - matrix-dnsbot/target/release/dnsbot
 tasks:
   - install: |
       curl https://sh.rustup.rs -sSf | sh -s -- -y -q --default-toolchain nightly --profile minimal
@@ -18,3 +23,8 @@ tasks:
       source $HOME/.cargo/env
       cd matrix-dnsbot
       cargo test
+  - build: |
+      source $HOME/.cargo/env
+      cd matrix-dnsbot
+      cargo build --release
+      upx -9 target/release/dnsbot
