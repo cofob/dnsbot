@@ -21,14 +21,14 @@ artifacts:
 tasks:
   - install: |
       curl https://sh.rustup.rs -sSf | sh -s -- -y -q --default-toolchain nightly --profile minimal
-  - check: |
-      source $HOME/.cargo/env
-      cd matrix-dnsbot
-      cargo c
-  - test: |
-      source $HOME/.cargo/env
-      cd matrix-dnsbot
-      cargo test
+  # - check: |
+  #     source $HOME/.cargo/env
+  #     cd matrix-dnsbot
+  #     cargo c
+  # - test: |
+  #     source $HOME/.cargo/env
+  #     cd matrix-dnsbot
+  #     cargo test
   - build: |
       source $HOME/.cargo/env
       cd matrix-dnsbot
