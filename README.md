@@ -20,5 +20,5 @@ docker run -d --name dnsbot --restart always \
   -e PASSWORD=p4ssW0rD_ \
   --dns 1.1.1.1 \
   --cpus 0.5 -m 100m \
-  cofob/dnsbot
+  ghcr.io/cofob/dnsbot
 ```
