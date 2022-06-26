@@ -8,7 +8,7 @@ packages:
   - gcc
   - upx
 secrets:
-  - c5732b50-ac7d-4e02-a80c-37c448a3db89
+  - 5d6701ac-a882-4683-9533-5aeaef240139
 sources:
   - https://git.sr.ht/~cofob/matrix-dnsbot
 triggers:
@@ -48,5 +48,6 @@ tasks:
   - build-container: |
       cd matrix-dnsbot/
       sudo docker build -t dnsbot . --build-arg bin=dnsbot-upx
-      sudo docker tag dnsbot ghcr.io/cofob/dnsbot
-      sudo docker image push ghcr.io/cofob/dnsbot
+  - publish-container: |
+      docker tag dnsbot ghcr.io/cofob/dnsbot
+      docker image push ghcr.io/cofob/dnsbot
