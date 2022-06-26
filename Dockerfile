@@ -1,4 +1,4 @@
-FROM alpine
+FROM debian:bullseye-slim
 
 ARG bin=dnsbot
 
