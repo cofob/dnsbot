@@ -16,8 +16,8 @@ triggers:
     condition: failure
     to: failure@cofob.ru
 artifacts:
-  - matrix-dnsbot/target/release/dnsbot
-  - dnsbot-upx
+  - matrix-dnsbot/dnsbot
+  - matrix-dnsbot/dnsbot-upx
 tasks:
   - install: |
       curl https://sh.rustup.rs -sSf | sh -s -- -y -q --default-toolchain nightly --profile minimal
@@ -33,8 +33,10 @@ tasks:
       source $HOME/.cargo/env
       cd matrix-dnsbot
       cargo build --release
+      cp target/release/dnsbot dnsbot
   - compress: |
-      upx -9 matrix-dnsbot/target/release/dnsbot -o dnsbot-upx
+      cd matrix-dnsbot/
+      upx -9 dnsbot -o dnsbot-upx
   - setup-docker: |
       curl -fsSL https://get.docker.com -o get-docker.sh
       sudo sh get-docker.sh
@@ -44,6 +46,7 @@ tasks:
       sleep 10
       cat ~/.docker_pass | docker login --username cofob --password-stdin
   - build-container: |
+      cd matrix-dnsbot/
       sudo docker build -t dnsbot . --build-arg bin=dnsbot-upx
-      docker tag dnsbot cofob/dnsbot
-      docker image push cofob/dnsbot
+      sudo docker tag dnsbot cofob/dnsbot
+      sudo docker image push cofob/dnsbot

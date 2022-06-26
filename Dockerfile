@@ -1,6 +1,6 @@
 FROM scratch
 
-ARG bin
+ARG bin=dnsbot
 
 COPY ${bin} /dnsbot
 
