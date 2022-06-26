@@ -40,7 +40,7 @@ async fn on_room_message(event: OriginalSyncRoomMessageEvent, room: Room) {
 
 			if line.contains("resolve help") {
 				let content = RoomMessageEventContent::text_html(
-					"Just send 'resolve (domain)'. 'resolve source' to get the code.",
+					"Just send `resolve (domain)`. `resolve source` to get the code.",
 					"Just send <code>resolve (domain)</code>. <code>resolve source</code> to get the code.");
 				room.send(content, None).await.unwrap();
 			} else if line.contains("resolve source") {
