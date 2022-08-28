@@ -6,7 +6,7 @@ rustPlatform.buildRustPackage rec {
 
   src = ./.;
 
-  cargoSha256 = lib.fakeSha256;
+  cargoSha256 = "sha256-bxVmp9HJ5Q07dALUjjHIcstEmzPGyfwGmypK+dMVLP0=";
 
   nativeBuildInputs = [ pkg-config ];
   buildInputs = [ openssl ];
@@ -14,6 +14,6 @@ rustPlatform.buildRustPackage rec {
   meta = with lib; {
     description = "DNS resolver in matrix";
     homepage = "https://git.frsqr.xyz/cofob/dnsbot";
-    license = licenses.agpl3;
+    license = licenses.gpl3;
   };
 }
